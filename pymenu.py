@@ -1,3 +1,5 @@
+import sys
+
 # Menu level constants
 MENU_ROOT   = 1
 
@@ -6,12 +8,6 @@ OPT_ID_NULL = 0
 OPT_ID_NAVP = 9902
 OPT_ID_NAVC = 9903
 OPT_ID_NAVE = 9904
-
-# For python 2 and 3 compat
-try:
-    input = raw_input
-except NameError:
-    pass
 
 class MenuError(Exception):
     """Encounters a menu error, but can recover"""
@@ -296,7 +292,7 @@ class Menu(object):
         if not self.get_child_menus():
             raise MenuNavigateError("Navigation failed, child menu does not exist")
         else:
-            self.get_child_menus().start()
+            self.get_child_menus().run()
 
     def nav_parent(self):
         """
@@ -308,7 +304,7 @@ class Menu(object):
         if not self.get_parent_menu():
             raise MenuNavigateError("Navigation failed, parent menu does not exist")
         else:
-            self.get_parent_menu().start()
+            self.get_parent_menu().run()
 
     def clear_options(self):
         """
@@ -394,7 +390,11 @@ class Menu(object):
         :return:                       A user selection
         """
 
-        selection = input(self.get_prompt())
+        sys.stdout.write(self.get_prompt())
+        selection = sys.stdin.readline().rstrip("\n")
+        sys.stdin.flush()
+        sys.stdout.flush()
+
         return selection
 
     def get_child_menus(self):
@@ -454,14 +454,13 @@ class Menu(object):
             except IndexError:
                 pass
 
-    def start(self):
+    def run(self):
         """
         Runs a menu, allowing a user to make selections
         :raise MenuRuntimeError:       If the menu has no options
                                        If the selected option has no function
         :return:                       Nothing
         """
-
         option_fx       = None
         opt_exit        = None
         opt_parent      = None
